@@ -1,4 +1,5 @@
 import sys
+import os
 
 sys.path.append(r'C:\Programs\3DS Max\3ds Max Design 2015')
 import MaxPlus
@@ -41,7 +42,7 @@ def setLimits(passLim=0, noiseLim=0.0, timeLim=0):
     """
     maxscript = '{0} = {1}\n'.format(scriptPassLimit, passLim) \
                 + '{0} = {1}\n'.format(scriptNoiseLimit, noiseLim) \
-                + '{0} = {1}\n'.format(scriptTimeLimit, timeLim)
+                + '{0} = {1}\n'.format(scriptTimeLimit, timeLim*1000) # timeLimit в мс
     MaxPlus.Core.EvalMAXScript(maxscript)
 
 
@@ -49,13 +50,26 @@ def writeLimitsToFile(path, limits):
     f = open(path, 'w')
     f.write("PassLimit: {}\n".format(limits[0]))
     f.write("NoiseLimit: {}\n".format(limits[1]))
-    f.write("TimeLimit: {} (сек)".format(limits[2] / 1000.0))
+    f.write("TimeLimit: {} (сек)".format(limits[2]))
     f.close()
 
 
-if setCoronaRenderer():
-    setLimits(1, 2.08, 3000)
-    limits = getLimits()
-    writeLimitsToFile(r"C:\Users\dozer\Desktop\result.txt", limits)
+def readParams():
+    """
+    производит чтение параметров из файла. Затем файл удаляется
+    """
+    paramsPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'params.txt')
+    f = open(paramsPath,'r')
+    data = f.readlines()
+    f.close()
+    os.remove(paramsPath)
+    return data
+
+
+passLim, noiseLim, timeLim, path = readParams() # получаем значения параметров
+if setCoronaRenderer(): # пытаемся установить CoronaRenderer в качестве рендер-движка
+    setLimits(passLim, noiseLim, timeLim) # устанавливаем значения лимитов
+    limits = getLimits() # получаем значения лимитов
+    writeLimitsToFile(path, limits) # сохраняем результаты в файл
 else:
     print "Corona renderer not found!"

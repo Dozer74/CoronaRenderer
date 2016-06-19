@@ -1,1 +1,1 @@
-from maxconnect import pycharm
+from maxconnect import scriptrunner
